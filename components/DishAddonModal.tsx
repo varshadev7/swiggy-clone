@@ -65,9 +65,9 @@ export default function DishAddonModal({
         </p>
 
         <div className="max-h-72 space-y-2 overflow-y-auto border-y border-gray-100 py-3">
-          {item.addons.map((addon) => (
+          {item.addons.map((addon, index) => (
             <label
-              key={addon.id}
+              key={`${addon.id}-${index}`}
               className="flex cursor-pointer items-center justify-between rounded-lg px-2 py-2 hover:bg-gray-50"
             >
               <div className="flex items-center gap-3">

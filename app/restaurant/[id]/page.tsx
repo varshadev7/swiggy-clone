@@ -28,18 +28,29 @@ export default function RestaurantPage({ params }: Props) {
   );
 
   React.useEffect(() => {
-    // find restaurant in local mock data by id
-    const r = restaurants.find((r) => r.id === id) || restaurants[0] || null;
-    setRestaurant(r);
+    async function load() {
+      setLoading(true);
+      try {
+        const [rRes, mRes] = await Promise.all([
+          fetch(`/api/restaurants/${id}`),
+          fetch(`/api/restaurants/${id}/menu`),
+        ]);
 
-    // for now just pick the first menu (you can map by id later)
-    const m = menus.find((m) => m.restaurantId === r?.id) || menus[0] || null;
-    setMenu(m);
+        if (rRes.ok) {
+          setRestaurant(await rRes.json());
+        }
 
-    setLoading(false);
+        if (mRes.ok) {
+          setMenu(await mRes.json());
+        }
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
   }, [id]);
 
-  if (loading || !restaurant) {
+  if (loading) {
     return (
       <main className="p-6">
         <p>Loading...</p>
@@ -47,12 +58,18 @@ export default function RestaurantPage({ params }: Props) {
     );
   }
 
+  if (!restaurant) {
+    return (
+      <main className="p-6">
+        <h1>Restaurant not found</h1>
+      </main>
+    );
+  }
+
   const handleAddWithAddons = (selectedAddonIds: string[]) => {
     if (!currentItem) return;
-
     const selectedAddons =
       currentItem.addons?.filter((a) => selectedAddonIds.includes(a.id)) ?? [];
-
     const addonsTotal = selectedAddons.reduce(
       (sum, a) => sum + a.price,
       0
@@ -66,15 +83,16 @@ export default function RestaurantPage({ params }: Props) {
     });
   };
 
+
   return (
     <>
       <main className="space-y-8 px-6 pb-12 pt-6">
-        {/* Breadcrumb */}
+       
         <p className="text-xs text-gray-500">
           Home / Hyderabad / {restaurant.name}
         </p>
 
-        {/* Header card */}
+       
         <section className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
@@ -95,7 +113,7 @@ export default function RestaurantPage({ params }: Props) {
           </div>
         </section>
 
-        {/* Deals */}
+       
         <section className="space-y-3">
           <h2 className="text-lg font-semibold">Deals for you</h2>
           <div className="flex gap-4 overflow-x-auto pb-2">
@@ -110,7 +128,7 @@ export default function RestaurantPage({ params }: Props) {
           </div>
         </section>
 
-        {/* Menu header search + filters */}
+       
         <section className="space-y-4">
           <p className="text-center text-xs tracking-[0.2em] text-gray-500">
             — MENU —
@@ -139,7 +157,7 @@ export default function RestaurantPage({ params }: Props) {
           </div>
         </section>
 
-        {/* Menu categories + dishes */}
+      
         <section className="space-y-6">
           {menu ? (
             menu.categories.map((category) => (
@@ -213,7 +231,7 @@ export default function RestaurantPage({ params }: Props) {
         </section>
       </main>
 
-      {/* Bottom cart bar like Swiggy */}
+      
       {totalItems > 0 && (
         <div className="fixed inset-x-0 bottom-0 z-40 flex justify-center">
           <div className="flex w-full max-w-6xl items-center justify-between bg-green-700 px-6 py-3 text-sm text-white">
@@ -235,7 +253,7 @@ export default function RestaurantPage({ params }: Props) {
         </div>
       )}
 
-      {/* Add‑on popup */}
+      
       <DishAddonModal
         open={addonOpen}
         onClose={() => setAddonOpen(false)}

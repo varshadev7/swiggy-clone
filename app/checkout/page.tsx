@@ -10,18 +10,57 @@ export default function CheckoutPage() {
   const [address, setAddress] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [placed, setPlaced] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const itemsTotal = items.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
   );
-  const deliveryFee = items.length > 0 ? 30 : 0; // flat fee, just for UI
+  const deliveryFee = items.length > 0 ? 30 : 0;
   const total = itemsTotal + deliveryFee;
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setPlaced(true);
-    clearCart();
+    setError(null);
+
+    if (!items.length) return;
+
+    const restaurantId = items[0].restaurantId;
+
+    try {
+      setSubmitting(true);
+
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          restaurantId,
+          items,
+          totalAmount: total,
+          customer: {
+            name,
+            phone,
+            address,
+            paymentMethod,
+          },
+        }),
+      });
+
+      if (!res.ok) {
+        setError("Failed to place order. Please try again.");
+        return;
+      }
+
+      
+
+      setPlaced(true);
+      clearCart();
+    } catch {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (items.length === 0 && !placed) {
@@ -46,9 +85,7 @@ export default function CheckoutPage() {
 
   return (
     <main className="grid gap-8 p-6 md:grid-cols-[2fr,1fr]">
-      {/* Left: address + payment form */}
       <section className="space-y-6">
-        {/* Deliver to card */}
         <div className="rounded-2xl border border-gray-200 bg-white p-4">
           <h2 className="mb-2 text-sm font-semibold">Deliver to</h2>
           {address ? (
@@ -66,6 +103,12 @@ export default function CheckoutPage() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <h1 className="text-xl font-bold">Address details</h1>
+
+          {error && (
+            <p className="text-xs text-red-600">
+              {error}
+            </p>
+          )}
 
           <div className="space-y-1">
             <label className="text-sm font-medium">Name</label>
@@ -123,14 +166,14 @@ export default function CheckoutPage() {
 
           <button
             type="submit"
-            className="mt-2 rounded bg-green-600 px-4 py-2 text-sm font-semibold text-white"
+            disabled={submitting}
+            className="mt-2 rounded bg-green-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
           >
-            Pay ₹{total}
+            {submitting ? "Placing order..." : `Pay ₹${total}`}
           </button>
         </form>
       </section>
 
-      {/* Right: order summary like Swiggy */}
       <aside className="space-y-4 rounded-2xl border border-gray-200 bg-white p-4">
         <h2 className="text-lg font-semibold">Order summary</h2>
 
@@ -143,7 +186,7 @@ export default function CheckoutPage() {
               <span>
                 {item.name} × {item.quantity}
               </span>
-                            <span>₹{item.price * item.quantity}</span>
+              <span>₹{item.price * item.quantity}</span>
             </div>
           ))}
         </div>
@@ -166,4 +209,3 @@ export default function CheckoutPage() {
     </main>
   );
 }
-

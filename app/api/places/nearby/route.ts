@@ -44,7 +44,7 @@ export async function GET(req: Request) {
     return {
       id: p.place_id,
       name: p.name || "Unnamed Restaurant",
-      cuisines: [], // Geoapify doesn’t give cuisines directly
+      cuisines: [], 
       rating: p.rating ?? 4.0,
       deliveryTime: 30,
       area,

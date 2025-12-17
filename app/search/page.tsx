@@ -23,7 +23,7 @@ export default function SearchPage() {
 
   return (
     <main className="space-y-8 p-6">
-      {/* Search bar */}
+     
       <div>
         <div className="flex items-center rounded-md border border-gray-300 px-4 py-3">
           <span className="mr-3 text-lg">🔍</span>
@@ -36,7 +36,7 @@ export default function SearchPage() {
         </div>
       </div>
 
-      {/* Results */}
+     
       {query ? (
         <section className="space-y-3">
           <h2 className="text-lg font-semibold">Results</h2>
@@ -66,7 +66,7 @@ export default function SearchPage() {
           </div>
         </section>
       ) : (
-        /* Popular cuisines when no query */
+       
         <section className="space-y-4">
           <h2 className="text-lg font-semibold">Popular Cuisines</h2>
           <div className="flex flex-wrap gap-4">

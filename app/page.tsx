@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { setNearbyRestaurants } from "@/lib/geoapifyStore";
 
 type Restaurant = {
   id: string;
@@ -32,39 +31,24 @@ export default function HomePage() {
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (!navigator.geolocation) {
-      setError("Geolocation not supported in this browser.");
-      return;
-    }
-
-    setLoading(true);
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        try {
-          const { latitude, longitude } = pos.coords;
-          const res = await fetch(
-            `/api/places/nearby?lat=${latitude}&lng=${longitude}`
-          );
-          if (!res.ok) {
-            throw new Error("Failed to load restaurants");
-          }
-          const data: Restaurant[] = await res.json();
-          setRestaurants(data);
-setNearbyRestaurants(data);
-        } catch (err: any) {
-          setError(err.message ?? "Something went wrong");
-        } finally {
-          setLoading(false);
-        }
-      },
-      (err) => {
-        setError(err.message);
+    async function load() {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await fetch("/api/restaurants");
+        if (!res.ok) throw new Error("Failed to load restaurants");
+        const data: Restaurant[] = await res.json();
+        setRestaurants(data);
+      } catch (err: any) {
+        setError(err.message ?? "Something went wrong");
+      } finally {
         setLoading(false);
       }
-    );
+    }
+    load();
   }, []);
 
-  const topRestaurants = restaurants; // all for now
+  const topRestaurants = restaurants;
 
   const scroll = (direction: "left" | "right") => {
     if (!scrollRef.current) return;
@@ -77,51 +61,30 @@ setNearbyRestaurants(data);
 
   return (
     <div className="space-y-10">
-      {/* What's on your mind */}
-      <section>
-         <div className="flex items-center justify-between">
-        <h2 className="mb-4 text-2xl font-bold">
-          What&apos;s on your mind?
-        </h2>
-          <div className="flex gap-3">
-            <button
-              onClick={() => scroll("left")}
-              className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-300 text-lg"
-            >
-              ‹
-            </button>
-            <button
-              onClick={() => scroll("right")}
-              className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-300 text-lg"
-            >
-              ›
-            </button>
-          </div>
-          </div>
-        <div className="flex gap-8 overflow-x-auto pb-4">
-          {categories.map((cat) => (
+
+      <section className="space-y-3">
+        <h2 className="text-xl font-bold">What&apos;s on your mind?</h2>
+        <div className="flex gap-4 overflow-x-auto pb-2">
+                  {categories.map((cat) => (
             <button
               key={cat.id}
-              className="flex min-w-[96px] flex-col items-center gap-2"
+              className="min-w-[100px] rounded-2xl border border-gray-200 px-4 py-3 text-sm"
             >
-              <div className="h-20 w-20 rounded-full bg-gray-100" />
-              <span className="text-sm font-medium text-gray-800">
-                {cat.label}
-              </span>
+              {cat.label}
             </button>
           ))}
         </div>
-        <hr className="mt-4 border-gray-200" />
       </section>
- {/* Status */}
-      {loading && <p className="text-sm text-gray-600">Loading nearby restaurants…</p>}
+
+      {loading && (
+        <p className="text-sm text-gray-600">Loading restaurants…</p>
+      )}
       {error && <p className="text-sm text-red-600">{error}</p>}
-      {/* Top restaurant chains */}
-       <section className="space-y-4">
+
+
+      <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold">
-            Restaurants near you
-          </h2>
+          <h2 className="text-2xl font-bold">Restaurants</h2>
           <div className="flex gap-3">
             <button
               onClick={() => scroll("left")}
@@ -151,10 +114,10 @@ setNearbyRestaurants(data);
                   {restaurant.name}
                 </h3>
                 <p className="text-xs text-gray-600">
-                  ⭐ {restaurant.rating.toFixed(1)} • {restaurant.deliveryTime} mins
+                  ⭐ {restaurant.rating} • {restaurant.deliveryTime} mins
                 </p>
                 <p className="text-xs text-gray-600">
-                  {restaurant.cuisines.join(", ") || "Restaurant"}
+                  {restaurant.cuisines.join(", ")}
                 </p>
                 <p className="text-xs text-gray-500">{restaurant.area}</p>
               </div>

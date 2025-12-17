@@ -31,7 +31,7 @@ export default function LocationModal({ open, onClose }: Props) {
     );
     const data = await res.json();
 
-    console.log("Geoapify places:", data); // for now
+    console.log("Geoapify places:", data); 
     setStatus(`Found ${data.features?.length ?? 0} restaurants near you.`);
   },
   (error) => {
@@ -43,7 +43,7 @@ export default function LocationModal({ open, onClose }: Props) {
 
   return (
     <div className="fixed inset-0 z-40 flex bg-black/60">
-      {/* Left white panel */}
+      
       <div className="flex h-full w-full max-w-md flex-col bg-white p-6">
         <button
           onClick={onClose}
@@ -52,7 +52,7 @@ export default function LocationModal({ open, onClose }: Props) {
           ×
         </button>
 
-        {/* Search input */}
+       
         <div className="mb-4">
           <input
             value={query}
@@ -62,7 +62,7 @@ export default function LocationModal({ open, onClose }: Props) {
           />
         </div>
 
-        {/* Use current location */}
+        
         <button
           onClick={handleUseCurrentLocation}
           className="mt-2 flex w-full flex-col items-start rounded border border-gray-300 px-4 py-3 text-left"

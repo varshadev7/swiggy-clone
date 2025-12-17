@@ -1,4 +1,4 @@
-// Very simple in-memory cache just for dev
+
 export type NearbyRestaurant = {
   id: string;
   name: string;
