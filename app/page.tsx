@@ -2,6 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
+import { useBrowserLocation } from "@/lib/hooks/useBrowserLocation";
+
 
 type Restaurant = {
   id: string;
@@ -10,7 +13,7 @@ type Restaurant = {
   rating: number;
   deliveryTime: number;
   area: string;
-  imageUrl: string;
+  imageUrl: string; 
   isTopRestaurant: boolean;
 };
 
@@ -29,24 +32,33 @@ export default function HomePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
+   const { coords, error: locError, loading: locLoading } =
+    useBrowserLocation();
 
   useEffect(() => {
-    async function load() {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await fetch("/api/restaurants");
-        if (!res.ok) throw new Error("Failed to load restaurants");
-        const data: Restaurant[] = await res.json();
-        setRestaurants(data);
-      } catch (err: any) {
-        setError(err.message ?? "Something went wrong");
-      } finally {
-        setLoading(false);
+  async function load() {
+    setLoading(true);
+    setError(null);
+    try {
+      const params = new URLSearchParams();
+      if (coords) {
+        params.set("lat", coords.lat.toString());
+        params.set("lng", coords.lng.toString());
       }
+      const res = await fetch(`/api/restaurants?${params.toString()}`);
+      if (!res.ok) throw new Error("Failed to load restaurants");
+      const data: Restaurant[] = await res.json();
+      setRestaurants(data);
+    } catch (err: any) {
+      setError(err.message ?? "Something went wrong");
+    } finally {
+      setLoading(false);
     }
-    load();
-  }, []);
+  }
+  load();
+}, [coords]);
+
+
 
   const topRestaurants = restaurants;
 
@@ -59,13 +71,17 @@ export default function HomePage() {
     });
   };
 
-  return (
-    <div className="space-y-10">
+  const primaryArea =
+  restaurants.length > 0 ? restaurants[0].area : "Other";
 
+  return (
+    
+    <div className="space-y-10">
+      
       <section className="space-y-3">
         <h2 className="text-xl font-bold">What&apos;s on your mind?</h2>
         <div className="flex gap-4 overflow-x-auto pb-2">
-                  {categories.map((cat) => (
+          {categories.map((cat) => (
             <button
               key={cat.id}
               className="min-w-[100px] rounded-2xl border border-gray-200 px-4 py-3 text-sm"
@@ -76,11 +92,24 @@ export default function HomePage() {
         </div>
       </section>
 
+     {locLoading && (
+  <p className="text-xs text-gray-500">Detecting your location…</p>
+)}
+{locError && (
+  <p className="text-xs text-red-500">Location error: {locError}</p>
+)}
+{coords && !locError && (
+  <p className="text-xs text-gray-600">
+    Your location: {coords.lat.toFixed(4)}, {coords.lng.toFixed(4)}
+  </p>
+)}
+
+
+
       {loading && (
         <p className="text-sm text-gray-600">Loading restaurants…</p>
       )}
       {error && <p className="text-sm text-red-600">{error}</p>}
-
 
       <section className="space-y-4">
         <div className="flex items-center justify-between">
@@ -108,7 +137,20 @@ export default function HomePage() {
               href={`/restaurant/${restaurant.id}`}
               className="min-w-[260px] max-w-[260px] overflow-hidden rounded-2xl border border-gray-100 shadow-sm transition hover:shadow-md"
             >
-              <div className="h-40 w-full bg-gray-200" />
+             
+            {restaurant.imageUrl ? (
+  <Image
+    src={restaurant.imageUrl}
+    alt={restaurant.name}
+    width={400}
+    height={160}
+    className="h-40 w-full object-cover"
+  />
+) : (
+  <div className="h-40 w-full bg-gray-200" />
+)}
+
+
               <div className="space-y-1 p-3">
                 <h3 className="text-base font-semibold">
                   {restaurant.name}
