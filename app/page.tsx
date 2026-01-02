@@ -13,7 +13,7 @@ type Restaurant = {
   rating: number;
   deliveryTime: number;
   area: string;
-  imageUrl: string; 
+  cloudinaryImageId: string; 
   isTopRestaurant: boolean;
 };
 
@@ -111,7 +111,9 @@ export default function HomePage() {
       )}
       {error && <p className="text-sm text-red-600">{error}</p>}
 
+
       <section className="space-y-4">
+        
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold">Restaurants</h2>
           <div className="flex gap-3">
@@ -138,9 +140,9 @@ export default function HomePage() {
               className="min-w-[260px] max-w-[260px] overflow-hidden rounded-2xl border border-gray-100 shadow-sm transition hover:shadow-md"
             >
              
-            {restaurant.imageUrl ? (
+            {restaurant.cloudinaryImageId ? (
   <Image
-    src={restaurant.imageUrl}
+    src={`https://media-assets.swiggy.com/swiggy/image/upload/${restaurant.cloudinaryImageId}`}
     alt={restaurant.name}
     width={400}
     height={160}
@@ -149,6 +151,7 @@ export default function HomePage() {
 ) : (
   <div className="h-40 w-full bg-gray-200" />
 )}
+
 
 
               <div className="space-y-1 p-3">
