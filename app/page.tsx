@@ -91,18 +91,18 @@ export default function HomePage() {
           ))}
         </div>
       </section>
+{coords && (
+  <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl">
+    <div className="flex items-center gap-2">
+      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+      <span className="text-sm font-medium text-green-800">Location fetched successfully</span>
+    </div>
+    <p className="text-xs text-green-700 mt-1 font-mono">
+      Lat: {coords.lat.toFixed(6)} | Lng: {coords.lng.toFixed(6)}
+    </p>
+  </div>
+)}
 
-     {locLoading && (
-  <p className="text-xs text-gray-500">Detecting your location…</p>
-)}
-{locError && (
-  <p className="text-xs text-red-500">Location error: {locError}</p>
-)}
-{coords && !locError && (
-  <p className="text-xs text-gray-600">
-    Your location: {coords.lat.toFixed(4)}, {coords.lng.toFixed(4)}
-  </p>
-)}
 
 
 

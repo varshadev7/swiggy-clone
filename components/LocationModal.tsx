@@ -14,32 +14,32 @@ export default function LocationModal({ open, onClose }: Props) {
   if (!open) return null;
 
   const handleUseCurrentLocation = () => {
-    if (!navigator.geolocation) {
-      setStatus("Geolocation is not supported in this browser.");
-      return;
-    }
-
-    setStatus("Finding your location...");
-
-    navigator.geolocation.getCurrentPosition(
-  async (position) => {
-    const { latitude, longitude } = position.coords;
-    setStatus("Finding restaurants near you...");
-
-    const res = await fetch(
-      `/api/places/nearby?lat=${latitude}&lng=${longitude}`
-    );
-    const data = await res.json();
-
-    console.log("Geoapify places:", data); 
-    setStatus(`Found ${data.features?.length ?? 0} restaurants near you.`);
-  },
-  (error) => {
-    setStatus(error.message);
+  if (!navigator.geolocation) {
+    setStatus("Geolocation is not supported in this browser.");
+    return;
   }
-);
 
-  };
+  setStatus("Finding your location...");
+
+  navigator.geolocation.getCurrentPosition(
+    async (position) => {
+      const { latitude, longitude } = position.coords;
+      
+    
+      setStatus(`Lat: ${latitude.toFixed(6)} | Lng: ${longitude.toFixed(6)}`);
+     
+      const res = await fetch(`/api/places/nearby?lat=${latitude}&lng=${longitude}`);
+      const data = await res.json();
+      
+      console.log("Geoapify places:", data);
+      setStatus(`Found ${data.features?.length ?? 0} restaurants near you at Lat: ${latitude.toFixed(6)} | Lng: ${longitude.toFixed(6)}`);
+    },
+    (error) => {
+      setStatus(error.message);
+    }
+  );
+};
+
 
   return (
     <div className="fixed inset-0 z-40 flex bg-black/60">
@@ -70,12 +70,19 @@ export default function LocationModal({ open, onClose }: Props) {
           <span className="text-sm font-semibold">Get current location</span>
           <span className="text-xs text-gray-500">Using GPS</span>
         </button>
+{status && (
+  <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+    <div className="flex items-center gap-2 mb-1">
+      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+      <span className="text-sm font-medium text-green-800">Location fetched successfully</span>
+    </div>
+    <p className="text-xs text-green-700 font-mono">
+      Lat: {status.includes("lat") ? status.split("lat:")[1]?.split("|")[0]?.trim() : ""} | 
+      Lng: {status.includes("lng") ? status.split("lng:")[1]?.trim() : ""}
+    </p>
+  </div>
+)}
 
-        {status && (
-          <p className="mt-3 text-xs text-gray-600">
-            {status}
-          </p>
-        )}
       </div>
 
       
